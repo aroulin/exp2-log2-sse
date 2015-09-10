@@ -5,6 +5,9 @@
 
     .global Exp2
 Exp2:
+    ucomiss     xmm0, xmm0
+    jp          Exp2NaN
+
     minss       xmm0, upper_exp
     maxss       xmm0, lower_exp
 
@@ -34,12 +37,14 @@ Exp2:
     # final result
     mulss       xmm3, xmm4
     movaps      xmm0, xmm3
+
+Exp2NaN:
     ret
 
 upper_exp:
     .float 128.0
 lower_exp:
-    .float -126.99999
+    .float -127.0
 c0:
     .float 1.0
 c1:

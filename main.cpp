@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 
 #include "rdtsc.h"
@@ -11,10 +12,22 @@ extern "C" {
 
 static const size_t num_trials = 1000 * 1000 * 100;
 
-int main() {
-    cout << "Exp2 Benchmarks" << endl;
+#define PAD left << setw(20) << setfill(' ')
+#define TEST(x) cout << PAD << x << PAD << std::exp2(x) << PAD << Exp2(x) << PAD << abs(std::exp2(x) - Exp2(x)) << endl 
 
-    cout << "Quick test: std::exp2(3.5f) = " << std::exp2(3.5) << ", Exp2(3.5f) = " << Exp2(3.5f) << endl;
+int main() {
+
+    TEST(0.0f);
+    TEST(3.5f);
+    TEST(-1.0f);
+    TEST(-2.75f);
+    TEST(128.0f);
+    TEST(-127.0f);
+    TEST(INFINITY);
+    TEST(-INFINITY);
+    TEST(NAN);
+
+    cout << endl << "Benchmarks" << endl;
 
     uint64_t exp2_cycles = rdtsc();
     for (size_t i = 0; i < num_trials; ++i) {
