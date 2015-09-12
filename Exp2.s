@@ -3,8 +3,8 @@
 
     .text
 
-    .global Exp2
-Exp2:
+    .global Exp2f
+Exp2f:
     ucomiss     xmm0, xmm0
     jp          Exp2NaN
 

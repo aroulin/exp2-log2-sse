@@ -6,43 +6,29 @@
 
 using namespace std;
 
+namespace SSE {
 extern "C" {
-    float Exp2(float x);
+    float Exp2f(float x);
+}
 }
 
-static const size_t num_trials = 1000 * 1000 * 100;
-
-#define PAD left << setw(20) << setfill(' ')
-#define TEST(x) cout << PAD << x << PAD << std::exp2(x) << PAD << Exp2(x) << PAD << abs(std::exp2(x) - Exp2(x)) << endl 
+double __attribute__((always_inline)) Benchmark(float (*f)(float), size_t num_trials) {
+    uint64_t cycles = rdtsc();
+    for (size_t i = 0; i < num_trials; ++i) {
+        f((float)i);
+    }
+    return (double)(rdtsc() - cycles) / (double)num_trials;
+}
 
 int main() {
+    const size_t num_trials = 100 * 1000 * 1000;
 
-    TEST(0.0f);
-    TEST(3.5f);
-    TEST(-1.0f);
-    TEST(-2.75f);
-    TEST(128.0f);
-    TEST(-127.0f);
-    TEST(INFINITY);
-    TEST(-INFINITY);
-    TEST(NAN);
-
-    cout << endl << "Benchmarks" << endl;
-
-    uint64_t exp2_cycles = rdtsc();
-    for (size_t i = 0; i < num_trials; ++i) {
-        std::exp2((float)i);
-    }
-    exp2_cycles = rdtsc() - exp2_cycles;
-    cout << "std::exp2: " << (double)exp2_cycles / (double)num_trials << " cycles" << endl;
-
-    uint64_t Exp2_cycles = rdtsc();
-    for (size_t i = 0; i < num_trials; ++i) {
-        Exp2((float)i);
-    }
-    Exp2_cycles = rdtsc() - Exp2_cycles;
-    cout << "Exp2: " << (double)Exp2_cycles / (double)num_trials << " cycles" << endl;
-    cout << "Speedup of " << (double)exp2_cycles  / (double)Exp2_cycles << "X" << endl;
+    printf("Benchmarks\n");
+    double std_exp2f_cycles = Benchmark(std::exp2f, num_trials);
+    double sse_exp2f_cycles = Benchmark(SSE::Exp2f, num_trials);
+    printf("std::exp2f: %lf cycles\n", std_exp2f_cycles);
+    printf("SSE::Exp2f: %lf cycles\n", sse_exp2f_cycles);
+    printf("Speedup of %lfX\n", std_exp2f_cycles  / sse_exp2f_cycles);
 
     return 0;
 }
